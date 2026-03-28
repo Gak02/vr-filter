@@ -1,0 +1,612 @@
+/* ==========================================
+   Wedding Photo Booth - Heisei Purikura Style
+   ========================================== */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Zen Maru Gothic', 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #FFD1EC 0%, #E8CDFF 30%, #D1E8FF 60%, #FFD1EC 100%);
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+}
+
+@keyframes bgShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ==========================================
+   Sparkle Background
+   ========================================== */
+.bg-sparkles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-sparkle {
+  position: absolute;
+  color: #fff;
+  opacity: 0;
+  animation: twinkle 2s ease-in-out infinite;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
+}
+
+/* ==========================================
+   App Layout
+   ========================================== */
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================
+   Header - Purikura Style
+   ========================================== */
+.header {
+  text-align: center;
+  margin-bottom: 14px;
+  z-index: 1;
+  animation: fadeInDown 0.8s ease;
+}
+
+.header-deco {
+  font-size: 1.2rem;
+  color: #FF69B4;
+  letter-spacing: 0.3em;
+  margin-bottom: 2px;
+  animation: pulse 2s ease-in-out infinite;
+  text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+}
+
+.message {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.12em;
+  text-shadow:
+    -1px -1px 0 #FF69B4,
+    1px -1px 0 #FF69B4,
+    -1px 1px 0 #FF69B4,
+    1px 1px 0 #FF69B4,
+    0 0 12px rgba(255, 105, 180, 0.6);
+  margin-bottom: 2px;
+}
+
+.names {
+  font-family: 'Sacramento', cursive;
+  font-size: 3.5rem;
+  color: #fff;
+  line-height: 1.1;
+  text-shadow:
+    -2px -2px 0 #DA70D6,
+    2px -2px 0 #DA70D6,
+    -2px 2px 0 #DA70D6,
+    2px 2px 0 #DA70D6,
+    0 0 20px rgba(218, 112, 214, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.names .amp {
+  display: inline-block;
+  font-size: 2.8rem;
+  color: #FFD700;
+  margin: 0 6px;
+  text-shadow:
+    -1px -1px 0 #FF69B4,
+    1px -1px 0 #FF69B4,
+    -1px 1px 0 #FF69B4,
+    1px 1px 0 #FF69B4,
+    0 0 15px rgba(255, 215, 0, 0.8);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.date {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #FFD700;
+  letter-spacing: 0.15em;
+  text-shadow:
+    -1px -1px 0 #FF69B4,
+    1px -1px 0 #FF69B4,
+    -1px 1px 0 #FF69B4,
+    1px 1px 0 #FF69B4,
+    0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ==========================================
+   Camera Frame - Purikura Decorated
+   ========================================== */
+.camera-wrapper {
+  z-index: 1;
+  animation: fadeIn 0.8s ease 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.camera-frame-outer {
+  position: relative;
+  padding: 16px;
+  background: linear-gradient(135deg,
+    #FFB6D9 0%, #E8CDFF 25%, #FFB6D9 50%, #D4A5FF 75%, #FFB6D9 100%);
+  background-size: 200% 200%;
+  animation: frameBg 6s ease infinite;
+  border-radius: 28px;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px #FF69B4,
+    0 0 30px rgba(255, 105, 180, 0.3),
+    0 8px 30px rgba(0, 0, 0, 0.15),
+    inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes frameBg {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Frame stamps */
+.frame-stamp {
+  position: absolute;
+  z-index: 5;
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.stamp-tl { top: -8px; left: -4px; color: #FF69B4; animation: bounce 2s ease infinite; }
+.stamp-tr { top: -8px; right: -4px; color: #FFD700; animation: bounce 2s ease infinite 0.3s; }
+.stamp-bl { bottom: -8px; left: -4px; color: #FFD700; animation: bounce 2s ease infinite 0.6s; }
+.stamp-br { bottom: -8px; right: -4px; color: #FF69B4; animation: bounce 2s ease infinite 0.9s; }
+.stamp-tc { top: -16px; left: 50%; transform: translateX(-50%); color: #FFD700; font-size: 1.8rem; animation: bounce 2s ease infinite 0.15s; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+.stamp-ml { top: 50%; left: -10px; color: #FF69B4; font-size: 1.2rem; animation: bounce 2s ease infinite 0.45s; }
+.stamp-mr { top: 50%; right: -10px; color: #FF69B4; font-size: 1.2rem; animation: bounce 2s ease infinite 0.75s; }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.15); }
+}
+
+.stamp-tc {
+  animation: bounceCenter 2s ease infinite 0.15s;
+}
+@keyframes bounceCenter {
+  0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+  50% { transform: translateX(-50%) translateY(-4px) scale(1.15); }
+}
+
+/* Ribbon decorations */
+.frame-ribbon {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  z-index: 5;
+}
+
+.frame-ribbon::before,
+.frame-ribbon::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 28px;
+  background: #FF69B4;
+  border-radius: 0 0 50% 50%;
+  box-shadow: inset 0 -3px 6px rgba(0,0,0,0.1);
+}
+
+.ribbon-tl { top: 2px; left: 24px; }
+.ribbon-tl::before { transform: rotate(-20deg); left: 0; }
+.ribbon-tl::after { transform: rotate(20deg); left: 14px; }
+
+.ribbon-tr { top: 2px; right: 24px; }
+.ribbon-tr::before { transform: rotate(-20deg); left: 0; }
+.ribbon-tr::after { transform: rotate(20deg); left: 14px; }
+
+/* Camera container */
+.camera-container {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid #fff;
+  background: #1a1a2e;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#effectsCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Flash */
+.flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.15s ease;
+}
+
+.flash.active {
+  opacity: 1;
+  transition: none;
+}
+
+/* Countdown */
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.countdown.active {
+  opacity: 1;
+}
+
+.countdown-num {
+  font-family: 'Nunito', sans-serif;
+  font-size: 8rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    -3px -3px 0 #FF69B4,
+    3px -3px 0 #FF69B4,
+    -3px 3px 0 #FF69B4,
+    3px 3px 0 #FF69B4,
+    0 0 40px rgba(255, 105, 180, 0.8);
+  animation: countPop 0.8s ease;
+}
+
+@keyframes countPop {
+  0% { transform: scale(2); opacity: 0; }
+  30% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ==========================================
+   Capture Button - Purikura Style
+   ========================================== */
+.controls {
+  margin-top: 16px;
+  text-align: center;
+  z-index: 1;
+  animation: fadeIn 0.8s ease 0.4s both;
+}
+
+.capture-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background: linear-gradient(135deg, #FF69B4, #DA70D6, #FF69B4);
+  background-size: 200% 200%;
+  animation: btnGlow 3s ease-in-out infinite;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 3px rgba(255, 105, 180, 0.5),
+    0 4px 20px rgba(255, 105, 180, 0.4),
+    0 0 40px rgba(255, 105, 180, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease;
+  margin: 0 auto;
+  gap: 2px;
+}
+
+.capture-btn:active {
+  transform: scale(0.9);
+}
+
+@keyframes btnGlow {
+  0%, 100% { background-position: 0% 50%; box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.5), 0 4px 20px rgba(255, 105, 180, 0.4), 0 0 40px rgba(255, 105, 180, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.4); }
+  50% { background-position: 100% 50%; box-shadow: 0 0 0 5px rgba(255, 105, 180, 0.6), 0 4px 30px rgba(255, 105, 180, 0.6), 0 0 60px rgba(255, 105, 180, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.4); }
+}
+
+.capture-btn-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.capture-btn-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Bottom deco */
+.bottom-deco {
+  margin-top: 8px;
+  font-size: 1rem;
+  color: #FF69B4;
+  letter-spacing: 0.5em;
+  opacity: 0.6;
+  z-index: 1;
+  animation: pulse 3s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
+}
+
+/* ==========================================
+   Modal - Purikura Result
+   ========================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: linear-gradient(135deg, #FFF0F5 0%, #F8F0FF 50%, #FFF0F5 100%);
+  border-radius: 28px;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 90vw;
+  max-height: 88vh;
+  box-shadow:
+    0 0 0 3px #FF69B4,
+    0 0 0 6px #fff,
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(255, 105, 180, 0.2);
+  position: relative;
+  animation: modalIn 0.5s ease;
+}
+
+.modal-header-deco {
+  width: 100%;
+  text-align: center;
+  padding: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #FF69B4;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(255, 105, 180, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes modalIn {
+  from { transform: scale(0.85) rotate(-2deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.modal-photo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px 20px;
+  min-width: 0;
+}
+
+.modal-photo canvas {
+  max-width: 100%;
+  max-height: 62vh;
+  border-radius: 16px;
+  border: 3px solid #FFB6D9;
+  box-shadow:
+    0 4px 20px rgba(255, 105, 180, 0.2),
+    0 0 0 2px #fff;
+}
+
+.modal-side {
+  width: 220px;
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* QR Code */
+.qr-section {
+  text-align: center;
+}
+
+.qr-code {
+  background: #fff;
+  padding: 10px;
+  border-radius: 16px;
+  border: 2px solid #FFB6D9;
+  box-shadow: 0 2px 10px rgba(255, 105, 180, 0.15);
+  display: inline-block;
+}
+
+.qr-code canvas,
+.qr-code img {
+  display: block !important;
+  border-radius: 4px;
+}
+
+.qr-hint {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #DA70D6;
+  line-height: 1.5;
+}
+
+/* Modal Buttons */
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border: 3px solid #fff;
+  border-radius: 50px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  color: #fff;
+}
+
+.btn:active { transform: scale(0.94); }
+
+.btn-download {
+  background: linear-gradient(135deg, #FF69B4, #FF1493);
+  box-shadow: 0 3px 15px rgba(255, 20, 147, 0.4);
+}
+
+.btn-retake {
+  background: linear-gradient(135deg, #DA70D6, #BA55D3);
+  box-shadow: 0 3px 15px rgba(186, 85, 211, 0.4);
+}
+
+/* Auto-close bar */
+.auto-close-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FF69B4, #FFD700, #DA70D6);
+  border-radius: 0 0 28px 28px;
+  width: 100%;
+  transform-origin: left;
+}
+
+/* ==========================================
+   Camera sizing
+   ========================================== */
+.camera-container {
+  width: min(65vh, 78vw);
+  aspect-ratio: 4 / 3;
+}
+
+@media (orientation: portrait) {
+  .camera-container {
+    width: min(50vh, 88vw);
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ==========================================
+   Responsive - Tablet Portrait
+   ========================================== */
+@media (max-width: 1024px) {
+  .names { font-size: 2.8rem; }
+
+  .modal {
+    flex-direction: column;
+    max-height: 90vh;
+  }
+
+  .modal-side {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 12px 20px 16px;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: row;
+    width: auto;
+    gap: 8px;
+  }
+
+  .qr-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .qr-hint { margin-top: 0; text-align: left; }
+}
+
+@media (max-width: 600px) {
+  .names { font-size: 2.2rem; }
+  .message { font-size: 0.85rem; }
+  .capture-btn { width: 80px; height: 80px; }
+  .capture-btn-icon { font-size: 1.5rem; }
+  .frame-stamp { font-size: 1.2rem; }
+}

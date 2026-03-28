@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Wedding Photo Booth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sacramento&family=Zen+Maru+Gothic:wght@400;700;900&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- Sparkle background elements -->
+    <div class="bg-sparkles" id="bgSparkles"></div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-deco">&#10048; &#9829; &#10048;</div>
+      <p class="message" id="message">&#9825; Welcome to Our Wedding &#9825;</p>
+      <h1 class="names" id="names">Taro <span class="amp">&amp;</span> Hanako</h1>
+      <p class="date" id="date">&#10023; 2026.04.18 &#10023;</p>
+    </div>
+
+    <!-- Camera Area -->
+    <div class="camera-wrapper">
+      <div class="camera-frame-outer">
+        <!-- Purikura frame decorations -->
+        <div class="frame-stamp stamp-tl">&#9829;</div>
+        <div class="frame-stamp stamp-tr">&#9734;</div>
+        <div class="frame-stamp stamp-bl">&#9734;</div>
+        <div class="frame-stamp stamp-br">&#9829;</div>
+        <div class="frame-stamp stamp-tc">&#9812;</div>
+        <div class="frame-stamp stamp-ml">&#9825;</div>
+        <div class="frame-stamp stamp-mr">&#9825;</div>
+        <div class="frame-ribbon ribbon-tl"></div>
+        <div class="frame-ribbon ribbon-tr"></div>
+
+        <div class="camera-container" id="cameraContainer">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="effectsCanvas"></canvas>
+          <div class="flash" id="flash"></div>
+
+          <!-- Countdown overlay -->
+          <div class="countdown" id="countdown">
+            <span class="countdown-num" id="countdownNum">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capture Button -->
+    <div class="controls">
+      <button class="capture-btn" id="captureBtn" aria-label="写真を撮る">
+        <span class="capture-btn-icon">&#128248;</span>
+        <span class="capture-btn-text">PUSH!</span>
+      </button>
+    </div>
+
+    <!-- Bottom deco -->
+    <div class="bottom-deco">
+      &#9829; &#9734; &#9829; &#9734; &#9829;
+    </div>
+  </div>
+
+  <!-- Photo Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="photoModal">
+      <div class="modal-header-deco">&#10048; Congratulations! &#10048;</div>
+      <div class="modal-photo">
+        <canvas id="photoCanvas"></canvas>
+      </div>
+      <div class="modal-side">
+        <div class="qr-section">
+          <div id="qrCode" class="qr-code"></div>
+          <p class="qr-hint">&#9825; スマホでスキャン &#9825;<br>写真をGETしよう!</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-download" id="downloadBtn">
+            &#128190; 保存
+          </button>
+          <button class="btn btn-retake" id="retakeBtn">
+            &#128260; もう1枚!
+          </button>
+        </div>
+      </div>
+      <div class="auto-close-bar" id="autoCloseBar"></div>
+    </div>
+  </div>
+
+  <!-- Hidden composite canvas -->
+  <canvas id="compositeCanvas" style="display:none;"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
