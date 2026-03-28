@@ -8,16 +8,59 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app" class="app">
+
+  <!-- ==========================================
+       Settings Screen (shown on first launch)
+       ========================================== -->
+  <div id="settingsScreen" class="settings-screen">
+    <div class="settings-card">
+      <div class="settings-header-deco">&#10048; &#9829; &#10048;</div>
+      <h1 class="settings-title">Wedding Photo Booth</h1>
+      <p class="settings-subtitle">&#9825; 初期設定 &#9825;</p>
+
+      <div class="settings-form">
+        <label class="settings-label">
+          <span>APIキー</span>
+          <input type="password" id="apiKeyInput" class="settings-input" placeholder="sk-ant-api03-...">
+        </label>
+        <label class="settings-label">
+          <span>新郎の名前</span>
+          <input type="text" id="groomInput" class="settings-input" placeholder="Taro" value="Taro">
+        </label>
+        <label class="settings-label">
+          <span>新婦の名前</span>
+          <input type="text" id="brideInput" class="settings-input" placeholder="Hanako" value="Hanako">
+        </label>
+        <label class="settings-label">
+          <span>日付</span>
+          <input type="text" id="dateInput" class="settings-input" placeholder="2026.04.18" value="2026.04.18">
+        </label>
+        <label class="settings-label">
+          <span>メッセージ</span>
+          <input type="text" id="messageInput" class="settings-input" placeholder="Welcome to Our Wedding" value="Welcome to Our Wedding">
+        </label>
+      </div>
+
+      <button class="settings-btn" id="startBtn">
+        &#9829; START &#9829;
+      </button>
+      <p class="settings-note">APIキーはこのデバイスにのみ保存されます</p>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Main App
+       ========================================== -->
+  <div id="app" class="app" style="display:none;">
     <!-- Sparkle background elements -->
     <div class="bg-sparkles" id="bgSparkles"></div>
 
     <!-- Header -->
     <div class="header">
       <div class="header-deco">&#10048; &#9829; &#10048;</div>
-      <p class="message" id="message">&#9825; Welcome to Our Wedding &#9825;</p>
-      <h1 class="names" id="names">Taro <span class="amp">&amp;</span> Hanako</h1>
-      <p class="date" id="date">&#10023; 2026.04.18 &#10023;</p>
+      <p class="message" id="dispMessage">&#9825; Welcome to Our Wedding &#9825;</p>
+      <h1 class="names" id="dispNames">Taro <span class="amp">&amp;</span> Hanako</h1>
+      <p class="date" id="dispDate">&#10023; 2026.04.18 &#10023;</p>
     </div>
 
     <!-- Camera Area -->
@@ -90,6 +133,7 @@
   <canvas id="compositeCanvas" style="display:none;"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
