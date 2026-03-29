@@ -441,9 +441,7 @@ class WeddingPhotoBooth {
 
   async loadFaceModel() {
     try {
-      await faceapi.nets.tinyFaceDetector.loadFromUri(
-        'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'
-      );
+      await faceapi.nets.tinyFaceDetector.loadFromUri('./models');
       this.faceModelLoaded = true;
       console.log('Face detection model loaded');
     } catch (err) {

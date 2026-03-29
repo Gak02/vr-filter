@@ -610,10 +610,13 @@ body {
   display: inline-block;
 }
 
-.qr-code canvas,
-.qr-code img {
+.qr-code canvas {
   display: block !important;
   border-radius: 4px;
+}
+
+.qr-code img {
+  display: none !important;
 }
 
 .qr-hint {
