@@ -357,6 +357,7 @@ class SettingsManager {
       brideName: localStorage.getItem('wb_brideName') || 'Hanako',
       date: localStorage.getItem('wb_date') || '2026.04.18',
       message: localStorage.getItem('wb_message') || 'Welcome to Our Wedding',
+      workerUrl: localStorage.getItem('wb_workerUrl') || '',
     };
   }
 
@@ -366,6 +367,7 @@ class SettingsManager {
     localStorage.setItem('wb_brideName', settings.brideName);
     localStorage.setItem('wb_date', settings.date);
     localStorage.setItem('wb_message', settings.message);
+    localStorage.setItem('wb_workerUrl', settings.workerUrl);
   }
 }
 
@@ -379,6 +381,7 @@ class WeddingPhotoBooth {
     CONFIG.date = settings.date;
     CONFIG.message = settings.message;
     this.apiKey = settings.apiKey;
+    this.workerUrl = settings.workerUrl;
 
     document.getElementById('dispNames').innerHTML =
       `${CONFIG.groomName} <span class="amp">&</span> ${CONFIG.brideName}`;
@@ -853,9 +856,43 @@ class WeddingPhotoBooth {
     };
     img.src = dataUrl;
 
-    this.generateQR();
     this.modalOverlay.classList.add('active');
     this.startAutoClose();
+
+    // Upload photo and generate QR with real URL
+    this.uploadAndGenerateQR(dataUrl);
+  }
+
+  async uploadAndGenerateQR(dataUrl) {
+    // Show loading state
+    this.qrContainer.innerHTML = '<p style="color:#DA70D6;font-size:0.8rem;">アップロード中...</p>';
+
+    if (!this.workerUrl) {
+      // No worker URL configured - show fallback QR
+      console.warn('[Upload] No worker URL configured');
+      this.generateQR('https://our-wedding.example.com/photo/no-server');
+      return;
+    }
+
+    try {
+      console.log('[Upload] Uploading photo to', this.workerUrl);
+      const response = await fetch(`${this.workerUrl}/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('[Upload] Success:', data.url);
+      this.generateQR(data.url);
+    } catch (err) {
+      console.error('[Upload] Error:', err);
+      this.qrContainer.innerHTML = '<p style="color:#DA70D6;font-size:0.8rem;">アップロード失敗</p>';
+    }
   }
 
   hideModal() {
@@ -863,13 +900,11 @@ class WeddingPhotoBooth {
     this.clearAutoClose();
   }
 
-  generateQR() {
+  generateQR(url) {
     // Clear all children completely
     while (this.qrContainer.firstChild) {
       this.qrContainer.removeChild(this.qrContainer.firstChild);
     }
-    const photoId = `photo_${Date.now()}_${this.photoCounter}`;
-    const url = `${CONFIG.photoBaseUrl}${photoId}`;
     try {
       const qr = new QRCode(this.qrContainer, {
         text: url,
@@ -937,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (saved.brideName) document.getElementById('brideInput').value = saved.brideName;
   if (saved.date) document.getElementById('dateInput').value = saved.date;
   if (saved.message) document.getElementById('messageInput').value = saved.message;
+  if (saved.workerUrl) document.getElementById('workerUrlInput').value = saved.workerUrl;
 
   startBtn.addEventListener('click', () => {
     const apiKey = document.getElementById('apiKeyInput').value.trim();
@@ -951,6 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
       brideName: document.getElementById('brideInput').value.trim() || 'Hanako',
       date: document.getElementById('dateInput').value.trim() || '2026.04.18',
       message: document.getElementById('messageInput').value.trim() || 'Welcome to Our Wedding',
+      workerUrl: document.getElementById('workerUrlInput').value.trim(),
     };
 
     SettingsManager.save(settings);
