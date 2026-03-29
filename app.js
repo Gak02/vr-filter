@@ -13,9 +13,8 @@ const CONFIG = {
   maxParticles: 35,
   spawnInterval: 300,
   countdownSeconds: 3,
-  // Thought bubble settings
-  thoughtRefreshInterval: 8000,  // ms between new thoughts
-  maxThoughts: 5,                // max simultaneous thoughts
+  thoughtRefreshInterval: 8000,
+  maxThoughts: 5,
 };
 
 // ------------------------------------------
@@ -108,8 +107,6 @@ class Sparkle {
     this.size = 3 + Math.random() * 8;
     this.opacity = 0;
     this.maxOpacity = 0.6 + Math.random() * 0.4;
-    this.phase = Math.random() * Math.PI * 2;
-    this.speed = 0.03 + Math.random() * 0.04;
     this.color = SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)];
     this.lifetime = 120 + Math.random() * 180;
     this.age = 0;
@@ -217,10 +214,8 @@ function drawThoughtBubble(ctx, x, y, text, maxWidth) {
   ctx.save();
   ctx.font = '900 15px "Zen Maru Gothic", "Nunito", sans-serif';
 
-  // Word wrap
   const lines = wrapText(ctx, text, maxWidth - 24);
   const lineHeight = 20;
-  const paddingX = 14;
   const paddingY = 10;
   const bubbleW = maxWidth;
   const bubbleH = lines.length * lineHeight + paddingY * 2;
@@ -240,13 +235,12 @@ function drawThoughtBubble(ctx, x, y, text, maxWidth) {
   ctx.stroke();
 
   // Thought dots (3 circles getting smaller)
-  const dotX = x;
   const dotStartY = bubbleY + bubbleH + 4;
   for (let i = 0; i < 3; i++) {
     const r = 5 - i * 1.5;
     const dy = dotStartY + i * (r * 2 + 3);
     ctx.beginPath();
-    ctx.arc(dotX - 5 + i * 3, dy, r, 0, Math.PI * 2);
+    ctx.arc(x - 5 + i * 3, dy, r, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.fill();
     ctx.strokeStyle = '#FF69B4';
@@ -264,7 +258,6 @@ function drawThoughtBubble(ctx, x, y, text, maxWidth) {
   }
 
   ctx.restore();
-
   return { x: bubbleX, y: bubbleY, w: bubbleW, h: bubbleH };
 }
 
@@ -313,6 +306,8 @@ async function generateThought(apiKey, numFaces) {
 - JSON配列で返す（例: ["ケーキ楽しみ🎂", "泣きそう😭"]）
 - JSON配列のみを返し、他のテキストは含めない`;
 
+  console.log('[AI] Requesting thoughts for', numFaces, 'faces...');
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -330,20 +325,23 @@ async function generateThought(apiKey, numFaces) {
     });
 
     if (!response.ok) {
-      console.error('API error:', response.status);
+      const errText = await response.text();
+      console.error('[AI] API error:', response.status, errText);
       return null;
     }
 
     const data = await response.json();
     const text = data.content[0].text.trim();
-    // Extract JSON array from response
+    console.log('[AI] Response:', text);
     const match = text.match(/\[[\s\S]*\]/);
     if (match) {
-      return JSON.parse(match[0]);
+      const parsed = JSON.parse(match[0]);
+      console.log('[AI] Parsed thoughts:', parsed);
+      return parsed;
     }
     return null;
   } catch (err) {
-    console.error('Thought generation error:', err);
+    console.error('[AI] Thought generation error:', err);
     return null;
   }
 }
@@ -369,10 +367,6 @@ class SettingsManager {
     localStorage.setItem('wb_date', settings.date);
     localStorage.setItem('wb_message', settings.message);
   }
-
-  static hasApiKey() {
-    return !!localStorage.getItem('wb_apiKey');
-  }
 }
 
 // ------------------------------------------
@@ -386,7 +380,6 @@ class WeddingPhotoBooth {
     CONFIG.message = settings.message;
     this.apiKey = settings.apiKey;
 
-    // Update displayed text
     document.getElementById('dispNames').innerHTML =
       `${CONFIG.groomName} <span class="amp">&</span> ${CONFIG.brideName}`;
     document.getElementById('dispMessage').textContent =
@@ -419,9 +412,8 @@ class WeddingPhotoBooth {
     this.photoCounter = 0;
     this.capturing = false;
 
-    // Face detection state
     this.faceDetections = [];
-    this.thoughts = [];       // { faceIndex, text, x, y }
+    this.thoughts = [];
     this.lastThoughtTime = 0;
     this.isGeneratingThoughts = false;
     this.faceModelLoaded = false;
@@ -441,11 +433,21 @@ class WeddingPhotoBooth {
 
   async loadFaceModel() {
     try {
+      // Try local models first, then CDN fallback
       await faceapi.nets.tinyFaceDetector.loadFromUri('./models');
       this.faceModelLoaded = true;
-      console.log('Face detection model loaded');
+      console.log('[FaceAPI] Model loaded from local');
     } catch (err) {
-      console.error('Face model load error:', err);
+      console.warn('[FaceAPI] Local load failed, trying CDN...', err.message);
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(
+          'https://justadudewhohacks.github.io/face-api.js/models'
+        );
+        this.faceModelLoaded = true;
+        console.log('[FaceAPI] Model loaded from CDN');
+      } catch (err2) {
+        console.error('[FaceAPI] All model loads failed:', err2.message);
+      }
     }
   }
 
@@ -457,8 +459,9 @@ class WeddingPhotoBooth {
       });
       this.video.srcObject = stream;
       await this.video.play();
+      console.log('[Camera] Started, resolution:', this.video.videoWidth, 'x', this.video.videoHeight);
     } catch (err) {
-      console.error('Camera error:', err);
+      console.error('[Camera] Error:', err);
       const container = document.getElementById('cameraContainer');
       const msg = document.createElement('div');
       msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;text-align:center;padding:20px;';
@@ -489,8 +492,11 @@ class WeddingPhotoBooth {
 
   // --- Face Detection Loop ---
   startFaceDetectionLoop() {
+    console.log('[FaceAPI] Detection loop started, model loaded:', this.faceModelLoaded);
+
     setInterval(async () => {
-      if (!this.faceModelLoaded || !this.video.videoWidth) return;
+      if (!this.faceModelLoaded) return;
+      if (!this.video.videoWidth || this.video.readyState < 2) return;
 
       try {
         const detections = await faceapi.detectAllFaces(
@@ -498,19 +504,21 @@ class WeddingPhotoBooth {
           new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 })
         );
 
-        // Map detections to display coordinates (mirrored)
         const vw = this.video.videoWidth;
         const vh = this.video.videoHeight;
         const scaleX = this.displayW / vw;
         const scaleY = this.displayH / vh;
 
         this.faceDetections = detections.map(d => ({
-          // Mirror the x coordinate since video is mirrored
           x: this.displayW - (d.box.x + d.box.width / 2) * scaleX,
           y: d.box.y * scaleY,
           w: d.box.width * scaleX,
           h: d.box.height * scaleY,
         }));
+
+        if (this.faceDetections.length > 0) {
+          console.log('[FaceAPI] Detected', this.faceDetections.length, 'face(s)');
+        }
 
         // Generate new thoughts if faces detected and enough time passed
         const now = Date.now();
@@ -527,7 +535,7 @@ class WeddingPhotoBooth {
           this.thoughts = [];
         }
       } catch (err) {
-        // Silently continue on detection errors
+        console.error('[FaceAPI] Detection error:', err.message);
       }
     }, 500);
   }
@@ -537,6 +545,7 @@ class WeddingPhotoBooth {
     this.lastThoughtTime = Date.now();
 
     const numFaces = Math.min(this.faceDetections.length, CONFIG.maxThoughts);
+    console.log('[AI] Refreshing thoughts for', numFaces, 'faces');
     const results = await generateThought(this.apiKey, numFaces);
 
     if (results && Array.isArray(results)) {
@@ -544,6 +553,9 @@ class WeddingPhotoBooth {
         text,
         faceIndex: i,
       }));
+      console.log('[AI] Thoughts updated:', this.thoughts);
+    } else {
+      console.warn('[AI] No results returned');
     }
 
     this.isGeneratingThoughts = false;
@@ -568,7 +580,6 @@ class WeddingPhotoBooth {
 
     this.effectsCtx.clearRect(0, 0, this.displayW, this.displayH);
 
-    // Draw particles
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.update();
@@ -695,11 +706,9 @@ class WeddingPhotoBooth {
     const videoRatio = vw / vh;
     let sx = 0, sy = 0, sw = vw, sh = vh;
     if (videoRatio > photoRatio) {
-      sw = vh * photoRatio;
-      sx = (vw - sw) / 2;
+      sw = vh * photoRatio; sx = (vw - sw) / 2;
     } else {
-      sh = vw / photoRatio;
-      sy = (vh - sh) / 2;
+      sh = vw / photoRatio; sy = (vh - sh) / 2;
     }
     ctx.drawImage(this.video, sx, sy, sw, sh, 0, 0, photoW, photoH);
     ctx.restore();
@@ -855,11 +864,14 @@ class WeddingPhotoBooth {
   }
 
   generateQR() {
-    this.qrContainer.innerHTML = '';
+    // Clear all children completely
+    while (this.qrContainer.firstChild) {
+      this.qrContainer.removeChild(this.qrContainer.firstChild);
+    }
     const photoId = `photo_${Date.now()}_${this.photoCounter}`;
     const url = `${CONFIG.photoBaseUrl}${photoId}`;
     try {
-      new QRCode(this.qrContainer, {
+      const qr = new QRCode(this.qrContainer, {
         text: url,
         width: 130,
         height: 130,
@@ -867,6 +879,11 @@ class WeddingPhotoBooth {
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M,
       });
+      // qrcodejs generates both canvas and img - remove the img
+      setTimeout(() => {
+        const imgs = this.qrContainer.querySelectorAll('img');
+        imgs.forEach(img => img.remove());
+      }, 100);
     } catch (e) {
       this.qrContainer.innerHTML = '<p style="color:#DA70D6;font-size:0.8rem;">QR生成エラー</p>';
     }
@@ -907,14 +924,13 @@ class WeddingPhotoBooth {
 }
 
 // ------------------------------------------
-// Initialization - Settings Screen
+// Initialization
 // ------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
   const settingsScreen = document.getElementById('settingsScreen');
   const app = document.getElementById('app');
   const startBtn = document.getElementById('startBtn');
 
-  // Pre-fill saved settings
   const saved = SettingsManager.load();
   if (saved.apiKey) document.getElementById('apiKeyInput').value = saved.apiKey;
   if (saved.groomName) document.getElementById('groomInput').value = saved.groomName;
@@ -938,11 +954,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     SettingsManager.save(settings);
-
-    // Transition to app
     settingsScreen.style.display = 'none';
     app.style.display = '';
-
     new WeddingPhotoBooth(settings);
   });
 });
